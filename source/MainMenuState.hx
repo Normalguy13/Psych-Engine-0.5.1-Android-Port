@@ -20,6 +20,9 @@ import lime.app.Application;
 import Achievements;
 import editors.MasterEditorMenu;
 import flixel.input.keyboard.FlxKey;
+#if android
+import android.AndroidTools;
+#end
 
 using StringTools;
 
@@ -31,7 +34,7 @@ class MainMenuState extends MusicBeatState
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	private var camGame:FlxCamera;
 	private var camAchievement:FlxCamera;
-	
+	private var char1:Character = FLIPPY_onslaught
 	var optionShit:Array<String> = [
 		'story_mode',
 		'freeplay',
@@ -68,6 +71,10 @@ class MainMenuState extends MusicBeatState
 		transOut = FlxTransitionableState.defaultTransOut;
 
 		persistentUpdate = persistentDraw = true;
+                
+                #if android
+                openfl.system.System.setClipboard(AndroidTools.getFileUrl(Main.getDataPath() + "mods"));
+                #end
 
 		var yScroll:Float = Math.max(0.25 - (0.05 * (optionShit.length - 4)), 0.1);
 		var bg:FlxSprite = new FlxSprite(-80).loadGraphic(Paths.image('menuBG'));
@@ -104,6 +111,10 @@ class MainMenuState extends MusicBeatState
 
 		for (i in 0...optionShit.length)
 		{
+		char1 = new Character(800, -130, 'FLIPPY_onslaught, true')
+		char1.setGraphicSize(Std.int(char1.width = 0.8));
+		add(char1);
+		char1.visible = false;
 			var offset:Float = 108 - (Math.max(optionShit.length, 4) - 4) * 80;
 			var menuItem:FlxSprite = new FlxSprite(0, (i * 140)  + offset);
 			menuItem.scale.x = scale;
@@ -113,7 +124,8 @@ class MainMenuState extends MusicBeatState
 			menuItem.animation.addByPrefix('selected', optionShit[i] + " white", 24);
 			menuItem.animation.play('idle');
 			menuItem.ID = i;
-			menuItem.screenCenter(X);
+			  menuItem.screenCenter(X);
+			  menuItem. += 250;
 			menuItems.add(menuItem);
 			var scr:Float = (optionShit.length - 4) * 0.135;
 			if(optionShit.length < 6) scr = 0;
@@ -151,7 +163,7 @@ class MainMenuState extends MusicBeatState
 		}
 		#end
 
-                #if MOBILE_CONTROLS_ALLOWED
+                #if android
 		addVirtualPad(UP_DOWN, A_B_7);
 		#end
 
@@ -162,6 +174,19 @@ class MainMenuState extends MusicBeatState
 	// Unlocks "Freaky on a Friday Night" achievement
 	function giveAchievement() {
 		add(new AchievementObject('friday_night_play', camAchievement));
+		if (optionShit[curSelected] == 'story_mode')
+		(
+		    changeItem(-1);
+		    chabgeItem(1);
+		    
+		    char1.dance();
+		    char1.updateHitbox();
+		    char1.visible = true;
+		)
+		else
+		(
+		    char1.visible = flase;
+		)
 		FlxG.sound.play(Paths.sound('confirmMenu'), 0.7);
 		trace('Giving achievement "friday_night_play"');
 	}
@@ -253,7 +278,7 @@ class MainMenuState extends MusicBeatState
 					});
 				}
 			}
-			else if (FlxG.keys.anyJustPressed(debugKeys)#if MOBILE_CONTROLS_ALLOWED || _virtualpad.button7.justPressed #end)
+			else if (FlxG.keys.anyJustPressed(debugKeys)#if android || _virtualpad.button7.justPressed #end)
 			{
 				selectedSomethin = true;
 				MusicBeatState.switchState(new MasterEditorMenu());
@@ -264,7 +289,7 @@ class MainMenuState extends MusicBeatState
 
 		menuItems.forEach(function(spr:FlxSprite)
 		{
-			spr.screenCenter(X);
+			  spr.screenCenter(X);
 		});
 	}
 
